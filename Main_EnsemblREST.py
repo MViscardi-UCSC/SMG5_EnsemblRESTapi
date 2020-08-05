@@ -59,13 +59,19 @@ if __name__ == '__main__':
     members_geneIDs = list(set(members_geneIDs))
     
     # The maximum post size is 50, so I'll start with just grabbing the first 50, eventually I'll do it all in pieces
-    data = f"""{{ "ids" : {members_geneIDs[:50]} }}"""
-    data = data.replace("'", '"')
-    print(data)
-    family_seqs_list = fetch_endpoint_POST(SERVER, "/sequence/id?type=cdna", data)
-    print(family_seqs_list)
-    fasta_output = "200805_Ensembl_PTHR15696_SF1_cDNA.fasta"
-    with open(fasta_output, 'a', encoding='utf-8') as f:
-        for hit in family_seqs_list:
-            f.write(f">{hit['query']}({hit['id']})->cDNA\n")
-            f.write(f"{hit['seq']}\n")
+    for i in range(0, len(members_geneIDs), 50):
+        try:
+            data = f"""{{ "ids" : {members_geneIDs[i:i+49]} }}"""
+            print(f"Running geneIDs {i} - {i+49}")
+        except IndexError:
+            data = f"""{{ "ids" : {members_geneIDs[i:]} }}"""
+            print(f"Running geneIDs {i} - {len(members_geneIDs)}")
+        data = data.replace("'", '"')
+        print(data)
+        family_seqs_list = fetch_endpoint_POST(SERVER, "/sequence/id?type=cds", data)
+        print(family_seqs_list)
+        fasta_output = "200805_Ensembl_PTHR15696_SF1_CDS.fasta"
+        with open(fasta_output, 'a', encoding='utf-8') as f:
+            for hit in family_seqs_list:
+                f.write(f">{hit['query']}({hit['id']})->CDS\n")
+                f.write(f"{hit['seq']}\n")
