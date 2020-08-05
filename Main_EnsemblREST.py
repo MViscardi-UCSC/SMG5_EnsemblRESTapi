@@ -1,5 +1,5 @@
 """
-EnsemblREST.py
+Main_EnsemblREST.py
 Marcus Viscardi     Aug 5, 2020
 
 Trying to pull everything together into one script to make later reuse easier
@@ -31,7 +31,6 @@ def fetch_endpoint(server, request, content_type):
 def fetch_endpoint_POST(server, request, data, content_type='application/json'):
     r = requests.post(server + request,
                       headers={"Content-Type": content_type},
-                      json={"type": "protein"},
                       data=data)
 
     if not r.ok:
@@ -60,8 +59,13 @@ if __name__ == '__main__':
     members_geneIDs = list(set(members_geneIDs))
     
     # The maximum post size is 50, so I'll start with just grabbing the first 50, eventually I'll do it all in pieces
-    data = f"""{{ "ids" : {members_geneIDs[:10]} }}"""
+    data = f"""{{ "ids" : {members_geneIDs[:50]} }}"""
     data = data.replace("'", '"')
     print(data)
-    family_seqs_dict = fetch_endpoint_POST(SERVER, "/sequence/id", data)
-    print(family_seqs_dict)
+    family_seqs_list = fetch_endpoint_POST(SERVER, "/sequence/id?type=cdna", data)
+    print(family_seqs_list)
+    fasta_output = "200805_Ensembl_PTHR15696_SF1_cDNA.fasta"
+    with open(fasta_output, 'a', encoding='utf-8') as f:
+        for hit in family_seqs_list:
+            f.write(f">{hit['query']}({hit['id']})->cDNA\n")
+            f.write(f"{hit['seq']}\n")
