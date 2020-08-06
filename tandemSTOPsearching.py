@@ -15,7 +15,7 @@ pseudo-code:
     6. profit?
 """
 
-import re
+import regex as re
 import pandas as pd
 
 # Pandas default would cut off any columns beyond 5 so:
@@ -62,22 +62,40 @@ def mergeDataframesOnID(cdna_df: pd.DataFrame, cds_df: pd.DataFrame) -> pd.DataF
 
 
 def matchCDStocDNA(merged_df: pd.DataFrame) -> pd.DataFrame:
-    pass
+    # Below doesn't want to work :/
+    # merged_df["3UTR"] = merged_df['sequence_cDNA'].str.extract(rf".*{merge_df['sequence_CDS']}(.+)")
+    for index, row in merge_df.iterrows():
+        match = re.findall(rf".*{row['sequence_CDS']}(.+)", row['sequence_cDNA'])
+        if match:
+            merge_df.loc[index, '3UTR'] = match[0]
+    # matched_df = merge_df
+    matched_df = merge_df[merge_df['3UTR'].notnull()]
+    print(matched_df.nunique())  # The 10 or so more unique UTRs compared to genes probably indicates alt-spliced UTRs?
+    return matched_df
 
 
-def findSTOPandTSCs(merged_df: pd.DataFrame) -> pd.DataFrame:
-    pass
+def findSTOPandTSCs(matched_df: pd.DataFrame) -> pd.DataFrame:
+    matched_df['STOP'] = matched_df['sequence_CDS'].str.slice(start=-3)
+    print(matched_df['STOP'])
+    print(matched_df.nunique())
+    return matched_df
 
 
 if __name__ == '__main__':
     
-    CDS = "200805_Ensembl_PTHR15696_SF1_CDS.fasta"
-    print("CDS:")
-    CDS_df = parseFastaToDataframe(CDS)
-    
     cDNA = "200805_Ensembl_PTHR15696_SF1_cDNA.fasta"
-    print("cDNA:")
+    print("\ncDNA:")
     cDNA_df = parseFastaToDataframe(cDNA)
     
-    print("Merged:")
-    mergeDataframesOnID(cDNA_df, CDS_df)
+    CDS = "200805_Ensembl_PTHR15696_SF1_CDS.fasta"
+    print("\nCDS:")
+    CDS_df = parseFastaToDataframe(CDS)
+    
+    print("\nMerged:")
+    merge_df = mergeDataframesOnID(cDNA_df, CDS_df)
+    
+    print("\nSequences Matched:")
+    match_df = matchCDStocDNA(merge_df)
+    
+    print("\nFound Stops and following codons")
+    findSTOPandTSCs(match_df)
