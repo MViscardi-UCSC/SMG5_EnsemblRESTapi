@@ -53,7 +53,12 @@ def parseFastaToDataframe(fasta_filepath: str) -> pd.DataFrame:
 
 
 def mergeDataframesOnID(cdna_df: pd.DataFrame, cds_df: pd.DataFrame) -> pd.DataFrame:
-    pass
+    # With an inner merge (accepting only overlap) it doesn't matter which of these start the merge
+    merged_df = cdna_df.merge(cds_df,
+                              on=['gene_id', 'transcript_id'],
+                              suffixes=("_cDNA", "_CDS"))
+    print(merged_df.nunique())
+    return merged_df
 
 
 def matchCDStocDNA(merged_df: pd.DataFrame) -> pd.DataFrame:
@@ -65,7 +70,14 @@ def findSTOPandTSCs(merged_df: pd.DataFrame) -> pd.DataFrame:
 
 
 if __name__ == '__main__':
+    
     CDS = "200805_Ensembl_PTHR15696_SF1_CDS.fasta"
+    print("CDS:")
     CDS_df = parseFastaToDataframe(CDS)
+    
     cDNA = "200805_Ensembl_PTHR15696_SF1_cDNA.fasta"
-    cDNA_df = parseFastaToDataframe((cDNA))
+    print("cDNA:")
+    cDNA_df = parseFastaToDataframe(cDNA)
+    
+    print("Merged:")
+    mergeDataframesOnID(cDNA_df, CDS_df)
