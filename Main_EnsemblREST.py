@@ -64,7 +64,7 @@ if __name__ == '__main__':
     #   (I think...)
     members_geneIDs = list(members_geneIDs)
     
-    # The maximum post size is 50, so I'll start with just grabbing the first 50, eventually I'll do it all in pieces
+    # The maximum post size seems to be 50 for Ensembl, iterate through the IDs in sets of 49!
     for i in range(0, len(members_geneIDs), 50):
         try:
             data = { "ids" : members_geneIDs[i:i+49] }
@@ -80,7 +80,7 @@ if __name__ == '__main__':
         
         print(family_seqs_list)
         fasta_output = "200805_Ensembl_PTHR15696_SF1_CDS.fasta"
-        with open(fasta_output, 'a', encoding='utf-8') as f:
+        with open(fasta_output, 'a', encoding='utf-8') as f:  # Append to the file with each loop
             for hit in family_seqs_list:
                 f.write(f">{hit['query']}({hit['id']})->CDS\n")
                 f.write(f"{hit['seq']}\n")
