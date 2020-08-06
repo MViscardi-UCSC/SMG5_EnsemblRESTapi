@@ -52,35 +52,32 @@ if __name__ == '__main__':
     # First pull all members of the protein family
     params = {
         'sequence': 'none',
-        'aligned': 0,
+        'aligned': '0',
         'member_source': 'ensembl'
     }
     prot_family_dict = fetch_endpoint(SERVER,"/family/id/PTHR15696_SF1",params=params)
     
     # Isolate just the gene IDs from here
-    members_geneIDs = []
-    for protein in prot_family_dict['members']:
-        members_geneIDs.append(protein['gene_stable_id'])
+    members_geneIDs = set(protein['gene_stable_id'] for protein in prot_family_dict['members'])
     
     # Convert back and forth to a set to remove redundant genes, these will show up again when looking for transcripts
     #   (I think...)
-    members_geneIDs = list(set(members_geneIDs))
+    members_geneIDs = list(members_geneIDs)
     
     # The maximum post size is 50, so I'll start with just grabbing the first 50, eventually I'll do it all in pieces
     for i in range(0, len(members_geneIDs), 50):
         try:
-            data = f"""{{ "ids" : {members_geneIDs[i:i+49]} }}"""
+            data = { "ids" : members_geneIDs[i:i+49] }
             print(f"Running geneIDs {i} - {i+49}")
         except IndexError:
-            data = {
-                "ids" : {members_geneIDs[i:]}
-            }
+            data = { "ids" : members_geneIDs[i:] }
             print(f"Running geneIDs {i} - {len(members_geneIDs)}")
-        print(data)
+        #print(data)
         params = {
-            'type': 'cds'
+            'type': 'cds',
         }
         family_seqs_list = fetch_endpoint_POST(SERVER, "/sequence/id", data, params=params)
+        
         print(family_seqs_list)
         fasta_output = "200805_Ensembl_PTHR15696_SF1_CDS.fasta"
         with open(fasta_output, 'a', encoding='utf-8') as f:
