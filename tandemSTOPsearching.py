@@ -159,11 +159,12 @@ def findSTOPandTSCs2(matched_df: pd.DataFrame) -> pd.DataFrame:
         except ValueError:
             min_stop = np.NaN
         return min_stop
-    
+    pd.set_option('mode.chained_assignment', None)
     first_stop_series = matched_df['UTR_codon_list'].apply(lambda x: find_first_stop(x))
     matched_df['first_STOP'] = first_stop_series
     print(matched_df.head(1))
     print(matched_df['first_STOP'].value_counts())
+    pd.set_option('mode.chained_assignment', 'warn')
     return matched_df
 
 
