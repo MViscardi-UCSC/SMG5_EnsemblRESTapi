@@ -170,13 +170,13 @@ def findSTOPandTSCs2(matched_df: pd.DataFrame) -> pd.DataFrame:
     pd.set_option('mode.chained_assignment', 'warn')
     
     print()
-    stop_index_counts = matched_df['first_STOP'].value_counts(normalize=False)  # ToDo: Change This back to True
+    stop_index_counts = matched_df['first_STOP'].value_counts(normalize=True)
     stop_index_counts = stop_index_counts.sort_index()
     index = stop_index_counts.index.tolist()
     hits = stop_index_counts.values.tolist()
     plt.plot(index, hits, marker='o', linewidth=.5)
     # plt.yscale('log')
-    plt.ylabel('Frequency among SMG5 orthologues\nin PTHR15696_SF1')
+    plt.ylabel(f'Frequency among SMG5 orthologues\nin PTHR15696_SF1 (Total: {matched_df["first_STOP"].size})')
     plt.xlabel('Number of amino acids before first STOP in 3UTR')
     plt.show()
     return matched_df
