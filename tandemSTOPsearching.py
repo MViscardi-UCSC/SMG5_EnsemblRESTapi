@@ -17,6 +17,8 @@ pseudo-code:
 
 import regex as re
 import matplotlib.pyplot as plt
+plt.style.use('ggplot')
+
 import numpy as np
 import pandas as pd
 
@@ -159,12 +161,24 @@ def findSTOPandTSCs2(matched_df: pd.DataFrame) -> pd.DataFrame:
         except ValueError:
             min_stop = np.NaN
         return min_stop
+    
     pd.set_option('mode.chained_assignment', None)
     first_stop_series = matched_df['UTR_codon_list'].apply(lambda x: find_first_stop(x))
     matched_df['first_STOP'] = first_stop_series
     print(matched_df.head(1))
-    print(matched_df['first_STOP'].value_counts())
+    # print(matched_df['first_STOP'].value_counts())
     pd.set_option('mode.chained_assignment', 'warn')
+    
+    print()
+    stop_index_counts = matched_df['first_STOP'].value_counts(normalize=False)  # ToDo: Change This back to True
+    stop_index_counts = stop_index_counts.sort_index()
+    index = stop_index_counts.index.tolist()
+    hits = stop_index_counts.values.tolist()
+    plt.plot(index, hits, marker='o', linewidth=.5)
+    # plt.yscale('log')
+    plt.ylabel('Frequency among SMG5 orthologues\nin PTHR15696_SF1')
+    plt.xlabel('Number of amino acids before first STOP in 3UTR')
+    plt.show()
     return matched_df
 
 
