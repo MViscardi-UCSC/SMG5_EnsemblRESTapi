@@ -51,7 +51,7 @@ def parseFastaToDataframe(fasta_filepath: str) -> pd.DataFrame:
                                             })
         # print(fasta_df)
         print(fasta_df.nunique())  # There are often several transcripts per gene, this helps to show that
-        #                            The presence of non-unique 'sequences' makes me think that there may be redundant
+        #                            the presence of non-unique 'sequences' makes me think that there may be redundant
         #                            transcript IDs pointing to same sequence in Ensembl
         return fasta_df
 
@@ -174,10 +174,18 @@ def findSTOPandTSCs2(matched_df: pd.DataFrame) -> pd.DataFrame:
     stop_index_counts = stop_index_counts.sort_index()
     index = stop_index_counts.index.tolist()
     hits = stop_index_counts.values.tolist()
-    plt.plot(index, hits, marker='o', linewidth=.5)
-    # plt.yscale('log')
-    plt.ylabel(f'Frequency among SMG5 orthologues\nin PTHR15696_SF1 (Total: {matched_df["first_STOP"].size})')
+    print(matched_df["first_STOP"].notna().size)
+    print(matched_df["first_STOP"].size)
+    print(matched_df["first_STOP"].value_counts(normalize=True))
+    print(matched_df["first_STOP"].value_counts(normalize=False, dropna=False))
+    print(matched_df["first_STOP"].value_counts(normalize=True).sum())
+    plt.plot(index, hits, marker='o', linewidth=.5, label="UGA, UAG, or UAA stops")
+    non_stops_norm = matched_df['first_STOP'].isna().sum() / matched_df['first_STOP'].size
+    plt.plot(0, non_stops_norm, marker='x', label="Non-stops or >100aa to first stop")
+    plt.ylabel(f'Frequency among SMG5 orthologues\nin PTHR15696_SF1'
+               f'(Total: {matched_df["first_STOP"].notna().size})')
     plt.xlabel('Number of amino acids before first STOP in 3UTR')
+    plt.legend()
     plt.show()
     return matched_df
 
@@ -187,7 +195,7 @@ if __name__ == '__main__':
     print("\ncDNA:")
     cDNA_df = parseFastaToDataframe(cDNA)
 
-    CDS = "200805_Ensembl_PTHR15696_SF1_CDS.fasta"
+    CDS = "200818_PTHR15696-SF1_CDSs_CD-HIT"
     print("\nCDS:")
     CDS_df = parseFastaToDataframe(CDS)
 
